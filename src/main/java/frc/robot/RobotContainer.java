@@ -31,8 +31,15 @@ import frc.robot.commands.Launch;
 import frc.robot.commands.LaunchSequence;
 
 public class RobotContainer {
+    private double FastMaxSpeed = 0.75 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    private double FastMaxAngularRate = 0.3*RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+
+    private double SlowMaxSpeed = 0.15 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    private double SlowMaxAngularRate = 0.3*RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+    
+    
     private double MaxSpeed = 0.3 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
-    private double MaxAngularRate = 0.6*RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
+    private double MaxAngularRate = 0.3*RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
     private final SwerveRequest.FieldCentric drive = new SwerveRequest.FieldCentric()
@@ -84,6 +91,69 @@ public class RobotContainer {
         driveJoystick.leftBumper().onTrue(drivetrain.runOnce(drivetrain::seedFieldCentric));
 
         drivetrain.registerTelemetry(logger::telemeterize);
+
+
+
+        driveJoystick.povLeft()
+            .onTrue(new RunCommand(() -> {
+              
+                
+            drivetrain.applyRequest(() ->
+                drive.withRotationalRate(-0.1) // Drive counterclockwise with negative X (left)
+            );
+
+
+            }).withTimeout(0.1));
+
+             
+driveJoystick.povRight()
+            .onTrue(new RunCommand(() -> {
+              
+                
+            drivetrain.applyRequest(() ->
+                drive.withRotationalRate(0.1) // Drive counterclockwise with negative X (left)
+            );
+
+
+            }).withTimeout(0.1));
+
+
+
+
+
+
+        driveJoystick.rightTrigger(0.8)
+            .whileTrue(new RunCommand(() -> {
+              
+                
+            drivetrain.applyRequest(() ->
+                drive.withVelocityX(-MathUtil.applyDeadband(-driveJoystick.getLeftY(), 0.1, 1) * FastMaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-MathUtil.applyDeadband(-driveJoystick.getLeftX(), 0.1, 1) * FastMaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-MathUtil.applyDeadband(driveJoystick.getRightX(), 0.1, 1) * FastMaxAngularRate) // Drive counterclockwise with negative X (left)
+            );
+
+
+            }));
+
+
+
+            driveJoystick.leftTrigger(0.8)
+            .whileTrue(new RunCommand(() -> {
+              
+                
+            drivetrain.applyRequest(() ->
+                drive.withVelocityX(-MathUtil.applyDeadband(-driveJoystick.getLeftY(), 0.1, 1) * SlowMaxSpeed) // Drive forward with negative Y (forward)
+                    .withVelocityY(-MathUtil.applyDeadband(-driveJoystick.getLeftX(), 0.1, 1) * SlowMaxSpeed) // Drive left with negative X (left)
+                    .withRotationalRate(-MathUtil.applyDeadband(driveJoystick.getRightX(), 0.1, 1) * SlowMaxAngularRate) // Drive counterclockwise with negative X (left)
+            );
+
+
+            }));
+    
+            
+
+
+        
 
         operatorJoystick.axisLessThan(XboxController.Axis.kRightY.value, -0.8)
               .whileTrue(new Eject(canFuelSubsystem));
