@@ -36,7 +36,8 @@ public class AutoDrive extends Command {
     System.out.println(xSpeed);
     driveSubsystem.applyRequest(() -> {
       return new SwerveRequest.RobotCentric()
-        .withVelocityX(xSpeed);
+        .withVelocityX(xSpeed)
+        .withRotationalRate(zRotation);
     }).execute();
   }
 

@@ -6,6 +6,8 @@ package frc.robot;
 
 import static edu.wpi.first.units.Units.*;
 
+import java.util.function.DoubleSupplier;
+
 import com.ctre.phoenix6.swerve.SwerveModule.DriveRequestType;
 import com.ctre.phoenix6.swerve.SwerveRequest;
 
@@ -40,7 +42,8 @@ public class RobotContainer {
     private double SlowMaxAngularRate = 0.5*RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
     
     
-    private double MaxSpeed = 0.75 * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
+    private double MaxSpeed = 0.75
+     * TunerConstants.kSpeedAt12Volts.in(MetersPerSecond); // kSpeedAt12Volts desired top speed
     private double MaxAngularRate = 0.5*RotationsPerSecond.of(0.75).in(RadiansPerSecond); // 3/4 of a rotation per second max angular velocity
 
     /* Setting up bindings for necessary control of the swerve drive platform */
@@ -67,12 +70,15 @@ public class RobotContainer {
 
         // Note that X is defined as forward according to WPILib convention,
         // and Y is defined as to the left according to WPILib convention.
+        DoubleSupplier driveSpeed = () -> driveJoystick.getRightTriggerAxis() > 0.7 ? FastMaxSpeed : MaxSpeed;
+        DoubleSupplier driveAngle = () -> driveJoystick.getRightTriggerAxis() > 0.7 ? FastMaxAngularRate : MaxAngularRate;
+        
         drivetrain.setDefaultCommand(
             // Drivetrain will execute this command periodically
             drivetrain.applyRequest(() ->
-                drive.withVelocityX(-MathUtil.applyDeadband(-driveJoystick.getLeftY(), 0.1, 1) * MaxSpeed) // Drive forward with negative Y (forward)
-                    .withVelocityY(-MathUtil.applyDeadband(-driveJoystick.getLeftX(), 0.1, 1) * MaxSpeed) // Drive left with negative X (left)
-                    .withRotationalRate(-MathUtil.applyDeadband(driveJoystick.getRightX(), 0.1, 1) * MaxAngularRate) // Drive counterclockwise with negative X (left)
+                drive.withVelocityX(-MathUtil.applyDeadband(-driveJoystick.getLeftY(), 0.1, 1) * driveSpeed.getAsDouble()) // Drive forward with negative Y (forward)
+                    .withVelocityY(-MathUtil.applyDeadband(-driveJoystick.getLeftX(), 0.1, 1) * driveSpeed.getAsDouble()) // Drive left with negative X (left)
+                    .withRotationalRate(-MathUtil.applyDeadband(driveJoystick.getRightX(), 0.1, 1) * driveAngle.getAsDouble()) // Drive counterclockwise with negative X (left)
             )
         );
 
@@ -130,18 +136,18 @@ driveJoystick.povRight()
 
 //while right trigger held make driving faster
 
-        driveJoystick.rightTrigger(0.8)
-            .whileTrue(new RunCommand(() -> {
+        // driveJoystick.rightTrigger(0.8)
+        //     .whileTrue(new RunCommand(() -> {
               
                 
-                drivetrain.applyRequest(() ->
-                    drive.withVelocityX(-MathUtil.applyDeadband(-driveJoystick.getLeftY(), 0.1, 1) * FastMaxSpeed) // Drive forward with negative Y (forward)
-                        .withVelocityY(-MathUtil.applyDeadband(-driveJoystick.getLeftX(), 0.1, 1) * FastMaxSpeed) // Drive left with negative X (left)
-                        .withRotationalRate(-MathUtil.applyDeadband(driveJoystick.getRightX(), 0.1, 1) * FastMaxAngularRate) // Drive counterclockwise with negative X (left)
-                );
+        //         drivetrain.applyRequest(() ->
+        //             drive.withVelocityX(-MathUtil.applyDeadband(-driveJoystick.getLeftY(), 0.1, 1) * FastMaxSpeed) // Drive forward with negative Y (forward)
+        //                 .withVelocityY(-MathUtil.applyDeadband(-driveJoystick.getLeftX(), 0.1, 1) * FastMaxSpeed) // Drive left with negative X (left)
+        //                 .withRotationalRate(-MathUtil.applyDeadband(driveJoystick.getRightX(), 0.1, 1) * FastMaxAngularRate) // Drive counterclockwise with negative X (left)
+        //         );
 
 
-            }, drivetrain));
+        //     }, drivetrain));
 
 
 //while left trigger held make driving slower
